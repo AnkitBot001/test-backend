@@ -8,7 +8,7 @@ exports.createUser = async (req, res) => {
     const { name, email, age } = req.body;
     const newUser = new User({ name, email, age });
     const savedUser = await newUser.save();
-    res.status(200).json(savedUser);
+    res.status(200).json({code:200,data:savedUser,msg:'User created successfully'});
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -20,7 +20,7 @@ exports.getUserById = async (req, res) => {
     try {
       const user = await User.findById(req.params.id);
       if (!user) return res.status(404).json({ error: 'User not found' });
-      res.json(user);
+      res.json({code:200,data:user,msg:'User fetched successfully'});
     } catch (error) {
       res.status(400).json({ error: 'Invalid user ID' });
     }
@@ -65,7 +65,7 @@ exports.deleteUserById = async (req, res) => {
       const userToReturn = savedUser.toObject();
       delete userToReturn.password;
   
-      res.status(200).json(userToReturn);
+      res.status(200).json({code:200,data:userToReturn,msg:'User created successfully'});
     } catch (error){
       res.status(500).json({error:error.message});
     }
@@ -88,10 +88,55 @@ exports.deleteUserById = async (req, res) => {
       const userToReturn = user.toObject();
       delete userToReturn.password;
 
-      res.status(200).json({...userToReturn, msg:'You are loggen in succesfully'});
+      res.status(200).json({code:200,data:userToReturn,msg:'You are loggen in succesfully'});
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   };
 
+  //Search user by name
+exports.searchUserByName = async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) return res.status(400).json({ error: 'Name query parameter is required' });
+
+    const users = await User.find({
+      name: { $regex: name, $options: 'i' }  // 'i' = case-insensitive
+    });
+    if (users.length === 0) return res.status(404).json({ error: 'No users found' });
+
+    res.json({code:200,data:users,msg:'Users fetched successfully'});
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+//Pagination for user list  
+exports.getUsersList =  async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10
+    const skip = (page - 1) * limit;
+
+    const users = await User.find()
+      .skip(skip)
+      .limit(Number(limit))
+      .exec();
+
+    const totalUsers = await User.countDocuments();
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    res.json({
+      code: 200,
+      data: users,
+      pagination: {
+        currentPage: Number(page),
+        totalPages,
+        totalUsers
+      },
+      msg: 'Users fetched successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
 
