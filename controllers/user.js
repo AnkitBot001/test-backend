@@ -114,10 +114,13 @@ exports.searchUserByName = async (req, res) => {
 //Pagination for user list  
 exports.getUsersList =  async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10
+    const { page = 1, limit = 10, sort = 1 } = req.query; // Default to page 1 and limit 10
     const skip = (page - 1) * limit;
 
+    const sortOrder = Number(sort) === -1 ? -1 : 1;
+
     const users = await User.find()
+      .sort({ name: sortOrder })
       .skip(skip)
       .limit(Number(limit))
       .exec();
