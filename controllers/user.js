@@ -113,29 +113,33 @@ exports.searchUserByName = async (req, res) => {
 //Pagination for user list  
 exports.getUsersList =  async (req, res) => {
   try {
-    const { page = 1, limit = 10, sort = 1 } = req.query; // Default to page 1 and limit 10
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const sort = parseInt(req.query.sort) === -1 ? -1 : 1;
+    const search = req.query.search?.toString().trim() || '';
     const skip = (page - 1) * limit;
+    const filter = search
+      ? { name: { $regex: search, $options: 'i' } } // case-insensitive search
+      : {};
 
-    const sortOrder = Number(sort) === -1 ? -1 : 1;
-
-    const users = await User.find()
-      .sort({ name: sortOrder })
+    const users = await User.find(filter)
+      .sort({ name: sort })
       .skip(skip)
       .limit(Number(limit))
-      .exec();
 
-    const totalUsers = await User.countDocuments();
+    const totalUsers = await User.countDocuments(filter);
     const totalPages = Math.ceil(totalUsers / limit);
 
     res.json({
       code: 200,
       data: users,
       pagination: {
-        currentPage: Number(page),
-        totalPages,
-        totalUsers
+        currentPage: page,
+        totalPages: Math.ceil(totalUsers / limit),
+        totalUsers,
+        pageSize: limit,
       },
-      msg: 'Users fetched successfully'
+      msg: 'Users fetched successfully',
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
