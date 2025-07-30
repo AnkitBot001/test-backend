@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const userRoutes = require('./routes/user'); // Import routes
+const patientRoutes = require('./routes/patient'); // Import routes
 
 const app = express();
 
@@ -23,6 +24,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/patient', patientRoutes)
 
 app.get('/', (req, res) => {
   res.send('✅ API is running...');
