@@ -128,7 +128,7 @@ exports.getUsersList =  async (req, res) => {
       .limit(Number(limit))
 
     const totalUsers = await User.countDocuments(filter);
-    const totalPages = Math.ceil(totalUsers / limit);
+    // const totalPages = Math.ceil(totalUsers / limit);
 
     res.json({
       code: 200,
