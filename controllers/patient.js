@@ -75,7 +75,7 @@ exports.patientList = async (req, res) => {
 
 exports.getPatientById = async (req, res) => {
     try {
-        const pat = patient.findById({req.params._id});
+        const pat = await patient.findById(req.params._id);
         if(!pat) return res.status(404).json({error:'Patient not found.'})
         res.json({
             code:200,
