@@ -115,7 +115,7 @@ exports.getUsersList =  async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const sort = parseInt(req.query.sort) === -1 ? -1 : 1;
+    const sort = parseInt(req.query.sort) === -1 ? -1 : -1;
     const search = req.query.search?.toString().trim() || '';
     const skip = (page - 1) * limit;
     const filter = search
@@ -123,7 +123,7 @@ exports.getUsersList =  async (req, res) => {
       : {};
 
     const users = await User.find(filter)
-      .sort({ name: sort })
+      .sort({ createdAt: sort })
       .skip(skip)
       .limit(Number(limit))
 
@@ -146,3 +146,17 @@ exports.getUsersList =  async (req, res) => {
   }
 }
 
+exports.updateUserById = async (req, res) => {
+  try {
+    const {id, name, email, age} = req.body;
+    if(!id || !name || !email || !age) return res.status(400).json({ error: 'All fields are required'});
+    const updatedUser = await User.findByIdAndUpdate(id,
+      {name, email, age},
+      {new: true}
+    )
+
+    return res.json({code:200,data:updatedUser})
+  }catch (error) {
+    res.status(500).json({error: error.message})
+  }
+}
