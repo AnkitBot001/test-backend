@@ -60,8 +60,10 @@ exports.patientList = async (req, res) => {
             .skip(skip)
             .limit(Number(limit))
 
-        const totalPatients = await patient.countDocuments();
-        
+        const totalPatients = search 
+            ? await patient.countDocuments(filter) 
+            : await patient.countDocuments();
+            
         res.json({
             code:200,
             data:patients,
